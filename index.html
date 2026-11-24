@@ -682,6 +682,76 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
+    // --- نقشه کارت‌های اختصاصی مهمانان ---
+    const cardMap = {
+      '1': 'cards/arezoo.jpg',
+      '2': 'cards/elham.jpg',
+      '3': 'cards/tabassom.jpg',
+      '4': 'cards/zeynab.jpg',
+      '5': 'cards/sara.jpg',
+      '6': 'cards/sonia-rezaei.jpg',
+      '7': 'cards/sonia.jpg',
+      '8': 'cards/meshkat.jpg',
+      '9': 'cards/mahsa.jpg',
+      '10': 'cards/nazanin.jpg',
+      '11': 'cards/hanieh.jpg',
+
+      'arezoo': 'cards/arezoo.jpg',
+      'elham': 'cards/elham.jpg',
+      'tabassom': 'cards/tabassom.jpg',
+      'zeynab': 'cards/zeynab.jpg',
+      'sara': 'cards/sara.jpg',
+      'sonia-rezaei': 'cards/sonia-rezaei.jpg',
+      'sonia': 'cards/sonia.jpg',
+      'meshkat': 'cards/meshkat.jpg',
+      'mahsa': 'cards/mahsa.jpg',
+      'nazanin': 'cards/nazanin.jpg',
+      'hanieh': 'cards/hanieh.jpg',
+
+      'آرزو': 'cards/arezoo.jpg',
+      'آرزو_طلوعی': 'cards/arezoo.jpg',
+      'الهام': 'cards/elham.jpg',
+      'الهام_حق_پناه': 'cards/elham.jpg',
+      'تبسم': 'cards/tabassom.jpg',
+      'تبسم_حیدری': 'cards/tabassom.jpg',
+      'زینب': 'cards/zeynab.jpg',
+      'زینب_بریمانی': 'cards/zeynab.jpg',
+      'سارا': 'cards/sara.jpg',
+      'سارا_علیزاده': 'cards/sara.jpg',
+      'سونیا_رضایی': 'cards/sonia-rezaei.jpg',
+      'سونیا': 'cards/sonia.jpg',
+      'مشکات': 'cards/meshkat.jpg',
+      'مهسا': 'cards/mahsa.jpg',
+      'مهسا_خزائلی': 'cards/mahsa.jpg',
+      'نازنین': 'cards/nazanin.jpg',
+      'نازنین_محسنی': 'cards/nazanin.jpg',
+      'هانیه': 'cards/hanieh.jpg',
+      'هانیه_ابراهیمی': 'cards/hanieh.jpg'
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardParam = urlParams.get('c') || urlParams.get('card') || urlParams.get('name') || urlParams.get('to');
+    let targetCardSrc = 'card.jpg';
+
+    if (cardParam) {
+      const decoded = decodeURIComponent(cardParam).trim();
+      const slug = decoded.toLowerCase().replace(/\s+/g, '_');
+      if (cardMap[slug]) {
+        targetCardSrc = cardMap[slug];
+      } else if (cardMap[decoded]) {
+        targetCardSrc = cardMap[decoded];
+      } else if (cardMap[cardParam]) {
+        targetCardSrc = cardMap[cardParam];
+      }
+    }
+
+    const imgTop = document.querySelector('.img-top');
+    const imgBottom = document.querySelector('.img-bottom');
+    if (imgTop && imgBottom) {
+      imgTop.src = targetCardSrc;
+      imgBottom.src = targetCardSrc;
+    }
+
     const stage = document.getElementById('stage');
     const waxSeal = document.getElementById('waxSeal');
     const envFlap = document.getElementById('envFlap');
