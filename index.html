@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دعوت‌نامه رسمی جشن بزرگ مهربانو</title>
+  
+  <!-- فونت وزیرمتن و آیکون‌ها -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --gold-primary: #d4af37;
+      --gold-glow: #f9e295;
+      --gold-dark: #8c6d23;
+      --deep-navy: #050811;
+      --card-w: 300px;
+      --card-h: 480px;
+      --half-h: 240px;
+      --env-w: 350px;
+      --env-h: 250px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--deep-navy);
+      background-image: 
+        radial-gradient(circle at 50% 15%, #162740 0%, #050811 75%),
+        radial-gradient(circle at 85% 85%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      overflow-y: auto;
+      color: #fff;
+      padding: 20px 10px 40px;
+    }
+
+    /* بوم ذرات طلایی شناور */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* سربرگ بالای صفحه */
+    .top-header {
+      position: relative;
+      z-index: 80;
+      text-align: center;
+      margin-bottom: 5px;
+      transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* وقتی کارت باز می‌شود، سربرگ به آرامی محو می‌شود تا فضا کاملاً برای دعوت‌نامه باز باشد */
+    body.card-opened .top-header {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+      pointer-events: none;
+    }
+
+    .top-header h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 15%, var(--gold-glow) 50%, var(--gold-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+      text-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
+    }
+
+    .guest-tag {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 20px;
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 30px;
+      font-size: 0.95rem;
+      color: var(--gold-glow);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    /* =========================================================
+       صحنه استیج (دارای ارتفاع مناسب تا کارت با هیچ متنی تداخل نکند)
+       ========================================================= */
+    .stage {
+      position: relative;
+      width: var(--env-w);
+      height: 550px;
+      margin: 10px auto 0;
+      perspective: 1200px;
+    }
+
+    /* راهنمای لمس مهر موم */
+    .click-hint {
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.6);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #f7eed8;
+      z-index: 140;
+      pointer-events: none;
+      animation: hintPulse 2s infinite ease-in-out;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: opacity 0.3s ease;
+    }
+
+    @keyframes hintPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.9; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+      50% { transform: translateX(-50%) scale(1.05); opacity: 1; box-shadow: 0 0 25px rgba(212, 175, 55, 0.6); }
+    }
+
+    /* ۱. دیواره پشتی پاکت نامه */
+    .env-back {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: var(--env-w);
+      height: var(--env-h);
+      background: linear-gradient(135deg, #0e1c30 0%, #070e1a 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 35px rgba(15, 32, 56, 0.5);
+      z-index: 5;
+      transition: transform 0.9s ease, opacity 0.8s ease;
+    }
+
+    /* ۲. درب بالای پاکت (Flap) */
+    .env-flap {
+      position: absolute;
+      bottom: calc(20px + var(--env-h) - 145px);
+      left: 0;
+      width: var(--env-w);
+      height: 145px;
+      transform-origin: top center;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 30; /* در ابتدا پلمپ کامل روی پاکت */
+      cursor: pointer;
+    }
+
+    .env-flap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+    }
+
+    /* ۳. مهر موم طلایی روی درب */
+    .wax-seal {
+      position: absolute;
+      bottom: calc(20px + var(--env-h) - 138px);
+      left: 50%;
+      transform: translate(-50%, 50%);
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff1b0 0%, #d4af37 40%, #8a681d 85%, #59410d 100%);
+      box-shadow: 
+        0 6px 18px rgba(0,0,0,0.7),
+        0 0 25px rgba(212, 175, 55, 0.7),
+        inset 0 2px 4px rgba(255, 255, 255, 0.7),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 35;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 2px solid rgba(255, 235, 160, 0.5);
+    }
+
+    .wax-seal:hover {
+      transform: translate(-50%, 50%) scale(1.1);
+      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.9), inset 0 2px 6px #fff;
+    }
+
+    .wax-seal i {
+      color: #4a3406;
+      font-size: 26px;
+      filter: drop-shadow(0 1px 1px rgba(255,255,255,0.4));
+    }
+
+    /* ۴. جیب جلوی پاکت (کامل، توپر و ۱۰۰٪ پوشاننده کارت در ابتدا) */
+    .env-pocket {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: var(--env-w);
+      height: var(--env-h);
+      z-index: 20; /* روی کارت اولیه قرار می‌گیرد */
+      pointer-events: none;
+      transition: transform 0.9s ease, opacity 0.8s ease;
+    }
+
+    .env-pocket svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* =========================================================
+       ۵. مجموعه کارت تاخورده
+       ========================================================= */
+    .card-root {
+      position: absolute;
+      bottom: 25px; /* کاملاً در کف پاکت */
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--card-w);
+      height: var(--half-h); /* ارتفاع تاخورده = ۲۴۰ پیکسل */
+      z-index: 10;
+      transition: transform 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-style: preserve-3d;
+      opacity: 1 !important;
+      filter: none !important;
+    }
+
+    /* ظرف کل کارت برای چرخش ۳ بعدی Tilt */
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      height: var(--half-h);
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+    }
+
+    /* لت پایینی کارت */
+    .card-bottom-panel {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 0 0 16px 16px;
+      border: 1.5px solid rgba(212, 175, 55, 0.5);
+      border-top: none;
+      background: #0d121c;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    /* لت بالایی کارت (لولاشده روی لبه بالای لت پایین) */
+    .card-top-panel {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      width: var(--card-w);
+      height: var(--half-h);
+      transform-origin: bottom center;
+      transform-style: preserve-3d;
+      border-radius: 16px 16px 0 0;
+      /* در حالت اولیه کاملاً تا خورده به سمت داخل و روی نیمه پایین */
+      transform: rotateX(-180deg);
+      transition: transform 0.9s cubic-bezier(0.25, 1, 0.4, 1);
+      z-index: 5;
+    }
+
+    /* دو روی لت بالایی */
+    .panel-face {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 16px 16px 0 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* رویه لت بالا (بخشی از کارت اصلی) */
+    .panel-face.front-face {
+      border: 1.5px solid rgba(212, 175, 55, 0.5);
+      border-bottom: none;
+      background: #0d121c;
+      transform: rotateY(0deg);
+    }
+
+    /* پشت لت بالا (هنگام تاخوردگی داخل پاکت) */
+    .panel-face.back-face {
+      background: linear-gradient(135deg, #132238 0%, #0a1322 100%);
+      border: 1.5px solid rgba(212, 175, 55, 0.4);
+      transform: rotateY(180deg) rotateZ(180deg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.7);
+    }
+
+    .back-logo {
+      text-align: center;
+      color: var(--gold-glow);
+    }
+
+    .back-logo i {
+      font-size: 32px;
+      margin-bottom: 8px;
+      color: var(--gold-primary);
+    }
+
+    .back-logo span {
+      display: block;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    /* عکس‌های دو نیمه کارت */
+    .img-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--card-w);
+      height: var(--card-h);
+      object-fit: cover;
+      display: block;
+    }
+
+    .img-bottom {
+      position: absolute;
+      top: calc(-1 * var(--half-h));
+      left: 0;
+      width: var(--card-w);
+      height: var(--card-h);
+      object-fit: cover;
+      display: block;
+    }
+
+    /* خط سایه تاخوردگی */
+    .crease-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 16px;
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity 0.8s ease;
+    }
+
+    .card-bottom-panel .crease-line {
+      top: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, transparent 100%);
+    }
+
+    .card-top-panel .crease-line {
+      bottom: 0;
+      background: linear-gradient(0deg, rgba(0,0,0,0.65) 0%, transparent 100%);
+    }
+
+    /* درخشش نوری */
+    .card-sheen {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 35%,
+        rgba(255, 230, 150, 0.25) 45%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 230, 150, 0.25) 55%,
+        transparent 65%
+      );
+      transform: skewX(-25deg) translateX(-180%);
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* =========================================================
+       روال انیمیشن با تنظیم دقیق موقعیت عمودی
+       ========================================================= */
+
+    /* مرحله ۱: باز شدن درب پاکت */
+    .stage.phase-flap .env-flap {
+      transform: rotateX(180deg);
+      z-index: 2;
+    }
+
+    .stage.phase-flap .wax-seal {
+      opacity: 0;
+      transform: translate(-50%, 50%) scale(0.4);
+      pointer-events: none;
+    }
+
+    .stage.phase-flap .click-hint {
+      opacity: 0;
+      display: none;
+    }
+
+    /* مرحله ۲: بیرون آمدن کارت تاخورده از دهانه جیب پاکت */
+    .stage.phase-rise .card-root {
+      transform: translate(-50%, -190px);
+    }
+
+    /* مرحله ۳: باز شدن تای بالایی کارت به سمت بالا */
+    .stage.phase-unfold .card-top-panel {
+      transform: rotateX(0deg);
+    }
+
+    .stage.phase-unfold .crease-line {
+      opacity: 0;
+    }
+
+    /* مرحله ۴: ایستادن باوقار کارت در مرکز و پایین‌تر از هر متنی */
+    /* موقعیت translateY به گونه‌ای تنظیم شده که کارت کاملاً در دید آزاد باشد و زیر هیچ متنی نرود */
+    .stage.phase-focus .card-root {
+      z-index: 100 !important;
+      transform: translate(-50%, -35px) scale(1.02);
+      cursor: grab;
+    }
+
+    .stage.phase-focus .card-root:active {
+      cursor: grabbing;
+    }
+
+    /* عقب‌نشینی پاکت به سمت پایین */
+    .stage.phase-focus .env-back,
+    .stage.phase-focus .env-pocket {
+      transform: translateY(110px) scale(0.9);
+      opacity: 0.25;
+    }
+
+    /* =========================================================
+       دکمه‌های عملیاتی زیر کارت
+       ========================================================= */
+    .action-panel {
+      position: relative;
+      z-index: 120;
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      max-width: 440px;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.7s ease;
+      pointer-events: none;
+    }
+
+    .stage.phase-focus ~ .action-panel {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: #fff;
+      background: rgba(15, 32, 56, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(212, 175, 55, 0.25);
+      border-color: var(--gold-glow);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(212, 175, 55, 0.35);
+      color: var(--gold-glow);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #c59b27 0%, #e2be58 50%, #9e781a 100%);
+      color: #121008;
+      border: none;
+      font-weight: 700;
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .action-btn.primary:hover {
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.7);
+      transform: translateY(-3px) scale(1.02);
+      color: #000;
+    }
+
+    /* دکمه شناور موسیقی */
+    .music-toggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(15, 32, 56, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      color: var(--gold-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 150;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+
+    .music-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+    }
+
+    .music-toggle.playing i {
+      animation: spinMusic 4s linear infinite;
+    }
+
+    @keyframes spinMusic {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* هماهنگی با موبایل */
+    @media (max-width: 480px) {
+      :root {
+        --card-w: 280px;
+        --card-h: 450px;
+        --half-h: 225px;
+        --env-w: 320px;
+        --env-h: 235px;
+      }
+      .stage {
+        width: 320px;
+        height: 520px;
+      }
+      .action-panel {
+        gap: 8px;
+      }
+      .action-btn {
+        font-size: 0.82rem;
+        padding: 9px 15px;
+      }
+      .stage.phase-focus .card-root {
+        transform: translate(-50%, -20px) scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- بوم ذرات طلایی شناور -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- دکمه شناور موسیقی -->
+  <button class="music-toggle" id="musicBtn" title="پخش / توقف موسیقی">
+    <i class="fa-solid fa-music"></i>
+  </button>
+
+  <!-- سربرگ بالای صفحه -->
+  <header class="top-header" id="topHeader">
+    <h1>جشن بزرگ مهربانو</h1>
+  </header>
+
+  <!-- صحنه اصلی استیج -->
+  <main class="stage" id="stage">
+    
+    <!-- راهنمای لمس مهر موم -->
+    <div class="click-hint" id="clickHint">
+      <i class="fa-solid fa-hand-pointer fa-bounce"></i>
+      برای گشودن دعوت‌نامه، روی مهر موم لمس کنید
+    </div>
+
+    <!-- ۱. دیواره پشتی پاکت (z-index: 5) -->
+    <div class="env-back" id="envBack"></div>
+
+    <!-- ۲. درب بالای پاکت (z-index: 30) -->
+    <div class="env-flap" id="envFlap">
+      <svg viewBox="0 0 350 145" preserveAspectRatio="none">
+        <polygon points="0,0 350,0 175,140" fill="#15263d" stroke="rgba(212,175,55,0.4)" stroke-width="1.2"/>
+      </svg>
+    </div>
+
+    <!-- ۳. کارت دعوت تاخورده -->
+    <div class="card-root" id="cardRoot">
+      <div class="card-flipper" id="cardFlipper">
+        
+        <!-- لت بالایی تاخورده به سمت داخل -->
+        <div class="card-top-panel" id="topPanel">
+          <div class="panel-face front-face">
+            <img src="card.jpg" alt="کارت دعوت" class="img-top">
+            <div class="crease-line"></div>
+            <div class="card-sheen" id="sheenTop"></div>
+          </div>
+          <div class="panel-face back-face">
+            <div class="back-logo">
+              <i class="fa-solid fa-crown"></i>
+              <span>مهربانو</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- لت پایینی نشسته در جیب -->
+        <div class="card-bottom-panel" id="bottomPanel">
+          <img src="card.jpg" alt="کارت دعوت" class="img-bottom">
+          <div class="crease-line"></div>
+          <div class="card-sheen" id="sheenBottom"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ۴. جیب جلوی پاکت (z-index: 20) -->
+    <div class="env-pocket" id="envPocket">
+      <svg viewBox="0 0 350 250" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="pocketBase" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#122238" />
+            <stop offset="100%" stop-color="#091322" />
+          </linearGradient>
+          <linearGradient id="bottomWing" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#182d4a" />
+            <stop offset="100%" stop-color="#0e1b2c" />
+          </linearGradient>
+          <filter id="pocketShadow">
+            <feDropShadow dx="0" dy="-4" stdDeviation="5" flood-color="#000000" flood-opacity="0.6"/>
+          </filter>
+        </defs>
+
+        <!-- زیربنای توپر جیب -->
+        <polygon points="0,50 175,140 350,50 350,250 0,250" fill="url(#pocketBase)"/>
+        <!-- باله چپ -->
+        <polygon points="0,0 175,125 0,250" fill="#0f1d32" stroke="rgba(212,175,55,0.2)" stroke-width="1"/>
+        <!-- باله راست -->
+        <polygon points="350,0 175,125 350,250" fill="#112239" stroke="rgba(212,175,55,0.2)" stroke-width="1"/>
+        <!-- باله پایینی با تذهیب طلایی و سایه -->
+        <polygon points="0,250 175,115 350,250" fill="url(#bottomWing)" stroke="rgba(212,175,55,0.35)" stroke-width="1.2" filter="url(#pocketShadow)"/>
+      </svg>
+    </div>
+
+    <!-- ۵. مهر موم طلایی روی درب پاکت (z-index: 35) -->
+    <div class="wax-seal" id="waxSeal" title="لمس برای باز شدن">
+      <i class="fa-solid fa-crown"></i>
+    </div>
+
+  </main>
+
+  <!-- دکمه‌های عملیاتی زیر کارت -->
+  <section class="action-panel">
+    <a href="https://maps.google.com/?q=ساری+خیابان+فرهنگ+سالن+سید+رسول+حسینی" target="_blank" class="action-btn primary" title="مسیریابی">
+      <i class="fa-solid fa-location-dot"></i>
+      مسیریابی سالن سید رسول حسینی
+    </a>
+
+    <button id="replayBtn" class="action-btn" title="مشاهده مجدد پاکت">
+      <i class="fa-solid fa-rotate-right"></i>
+      مشاهده مجدد پاکت
+    </button>
+  </section>
+
+  <!-- اسکریپت کانفتی -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const waxSeal = document.getElementById('waxSeal');
+    const envFlap = document.getElementById('envFlap');
+    const replayBtn = document.getElementById('replayBtn');
+    const cardRoot = document.getElementById('cardRoot');
+    const cardFlipper = document.getElementById('cardFlipper');
+    let isBusy = false;
+    let isOpen = false;
+
+    // توالی باز شدن
+    function openEnvelope() {
+      if (isBusy || isOpen) return;
+      isBusy = true;
+
+      // پخش خودکار موزیک اختصاصی با لمس پاکت
+      startMusic();
+
+      playChimeSound();
+
+      // حالت باز شدن برای محو شدن آرام سربرگ
+      document.body.classList.add('card-opened');
+
+      // فاز ۱: باز شدن درب پاکت
+      stage.classList.add('phase-flap');
+
+      // فاز ۲: بیرون سر خوردن کارت از دهانه جیب پاکت
+      setTimeout(() => {
+        stage.classList.add('phase-rise');
+      }, 750);
+
+      // فاز ۳: باز شدن تای بالایی کارت در فضا
+      setTimeout(() => {
+        stage.classList.add('phase-unfold');
+        launchConfetti();
+      }, 1600);
+
+      // فاز ۴: قرارگیری کامل کارت در کادر آزاد و خوانا
+      setTimeout(() => {
+        stage.classList.add('phase-focus');
+        triggerSheen();
+        isOpen = true;
+        isBusy = false;
+      }, 2500);
+    }
+
+    function closeEnvelope() {
+      if (isBusy || !isOpen) return;
+      isBusy = true;
+      resetTilt();
+
+      // متوقف کردن موزیک هنگام بستن پاکت
+      stopMusic();
+
+      document.body.classList.remove('card-opened');
+      stage.classList.remove('phase-focus');
+      stage.classList.remove('phase-unfold');
+
+      setTimeout(() => {
+        stage.classList.remove('phase-rise');
+      }, 700);
+
+      setTimeout(() => {
+        stage.classList.remove('phase-flap');
+        isOpen = false;
+        isBusy = false;
+      }, 1450);
+    }
+
+    waxSeal.addEventListener('click', openEnvelope);
+    envFlap.addEventListener('click', openEnvelope);
+    replayBtn.addEventListener('click', closeEnvelope);
+
+    // افکت بازتاب نور
+    function triggerSheen() {
+      const topS = document.getElementById('sheenTop');
+      const botS = document.getElementById('sheenBottom');
+      [topS, botS].forEach(s => {
+        s.style.transition = 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+        s.style.transform = 'skewX(-25deg) translateX(250%)';
+        setTimeout(() => {
+          s.style.transition = 'none';
+          s.style.transform = 'skewX(-25deg) translateX(-180%)';
+        }, 1300);
+      });
+    }
+
+    // چرخش ۳ بعدی Tilt روی کارت
+    function handleTilt(clientX, clientY) {
+      if (!isOpen || isBusy) return;
+
+      const rect = cardRoot.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotX = ((y - centerY) / centerY) * -10;
+      const rotY = ((x - centerX) / centerX) * 10;
+
+      cardFlipper.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02, 1.02, 1.02)`;
+    }
+
+    function resetTilt() {
+      cardFlipper.style.transition = 'transform 0.5s ease-out';
+      cardFlipper.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+      setTimeout(() => {
+        cardFlipper.style.transition = 'transform 0.6s ease';
+      }, 500);
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      handleTilt(e.clientX, e.clientY);
+    });
+
+    cardRoot.addEventListener('mouseleave', resetTilt);
+
+    cardRoot.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        handleTilt(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    });
+    cardRoot.addEventListener('touchend', resetTilt);
+
+    // کانفتی
+    function launchConfetti() {
+      if (typeof confetti !== 'function') return;
+      const colors = ['#d4af37', '#f9e295', '#0fa3b1', '#ffffff', '#e2be58'];
+      
+      confetti({
+        particleCount: 50,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: colors
+      });
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 30,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0.1, y: 0.7 },
+          colors: colors
+        });
+        confetti({
+          particleCount: 30,
+          angle: 120,
+          spread: 55,
+          origin: { x: 0.9, y: 0.7 },
+          colors: colors
+        });
+      }, 200);
+    }
+
+    // صدای زنگوله دلنشین با Web Audio API
+    let audioCtx = null;
+    function playChimeSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        if (!audioCtx) audioCtx = new AudioContext();
+
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+
+          gain.gain.setValueAtTime(0, audioCtx.currentTime + idx * 0.1);
+          gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + idx * 0.1 + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + idx * 0.1 + 1.1);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(audioCtx.currentTime + idx * 0.1);
+          osc.stop(audioCtx.currentTime + idx * 0.1 + 1.2);
+        });
+      } catch (err) {}
+    }
+
+    // مدیریت موسیقی اختصاصی دعوت‌نامه (۳۰ ثانیه شروع از ثانیه ۵۳)
+    const musicBtn = document.getElementById('musicBtn');
+    const bgAudio = new Audio('music.mp3');
+    bgAudio.volume = 0.85;
+    let isPlaying = false;
+
+    bgAudio.addEventListener('ended', () => {
+      isPlaying = false;
+      musicBtn.classList.remove('playing');
+    });
+
+    function startMusic() {
+      bgAudio.currentTime = 0;
+      bgAudio.play().then(() => {
+        isPlaying = true;
+        musicBtn.classList.add('playing');
+      }).catch(err => {
+        console.log('Audio playback error / gesture required:', err);
+      });
+    }
+
+    function stopMusic() {
+      bgAudio.pause();
+      bgAudio.currentTime = 0;
+      isPlaying = false;
+      musicBtn.classList.remove('playing');
+    }
+
+    musicBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        bgAudio.pause();
+        musicBtn.classList.remove('playing');
+        isPlaying = false;
+      } else {
+        bgAudio.play().then(() => {
+          musicBtn.classList.add('playing');
+          isPlaying = true;
+        }).catch(() => {});
+      }
+    });
+
+    // ذرات طلایی شناور
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2.2 + 0.6;
+        this.speedY = -(Math.random() * 0.4 + 0.1);
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.opacity = Math.random() * 0.6 + 0.2;
+        this.hue = Math.random() > 0.3 ? 45 : 185;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        if (this.y < -10) this.y = canvas.height + 10;
+        if (this.x < -10 || this.x > canvas.width + 10) this.x = Math.random() * canvas.width;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 80%, 65%, ${this.opacity})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `hsla(${this.hue}, 80%, 60%, 0.8)`;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  </script>
+</body>
+</html>
